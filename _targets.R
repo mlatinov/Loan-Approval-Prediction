@@ -1,10 +1,12 @@
 
 #### Libraries ####
 library(targets)
+library(tarchetypes)
+report_dir <- normalizePath("Report_documents")
 
 # Set targets options
 tar_option_set(
-  packages = c("tidyverse"),
+  packages = c("tidyverse","patchwork","ggcorrplot","DT"),
   seed = 123)
 
 # Source functions
@@ -22,8 +24,18 @@ list(
 
     ## EDA ##
     # Prepare data for EDA
-    tar_target(name = loan_train_eda,command = clean_eda(data = loan_train_data))
+    tar_target(name = loan_train_eda,command = clean_eda(data = loan_train_data)),
     
     # Write EDA Report
+    tar_render(
+      name = eda_report,
+      path = file.path(report_dir, "Eda_report.Rmd"),
+      output_file = file.path(report_dir, "Eda_report.html"),
+      params = list(eda_data = loan_train_eda),
+      quiet = FALSE
+    )
 )
+
+
+
 
