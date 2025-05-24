@@ -341,9 +341,9 @@ bar_plot_means_boxplot <- function(data,feature,category){
  num_levels <- nlevels(data[[category]])
  
  if (num_levels > 2) {
-   stat_test <- summary(aov(as.formula(paste(feature, "~", category)), data = data))
+   stat_test <- aov(as.formula(paste(feature, "~", category)), data = data)
  } else if (num_levels == 2) {
-   stat_test <- summary(t.test(as.formula(paste(feature, "~", category)), data = data))
+   stat_test <- t.test(as.formula(paste(feature, "~", category)), data = data)
  } else {
    stop("Error factor levels ")
  }
@@ -379,11 +379,11 @@ heatmap_function <- function(data,feature_amount,category_x,category_y){
   data <- data[char_vector]
   
   # Check the categories must be factors
-  if (!is.factor(data[category_x] & !is.factor(data[category_y]))) {
+  if (is.factor(data[category_x] & is.factor(data[category_y]))) {
     stop("Categories mist be factors in the data")
   }
   # Check if the feature_amount is num 
-  if (!is.num(data[feature_amount])) {
+  if (is.numeric(data[feature_amount])) {
     stop("Feature amount must be numerical in the data")
   }
   # Check for Na
