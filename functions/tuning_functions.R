@@ -114,7 +114,57 @@ debug(tune_race_wl)
 
 #### MBO Function ####
 
-
+mbo_function <- function(workflow,
+                         resamples,
+                         no_improve = 12,
+                         param_info,
+                         design) {
+  
+  
+  ## Set Up Bayesian Control Parameters
+  bayes_control <- control_bayes(
+    no_improve = 15,
+    save_pred = TRUE,
+    save_workflow = TRUE,
+    seed = 123
+  )
+  
+  # Initial results from a tune_grid
+  initial <- tune_grid(
+    object = workflow,
+    grid = design,
+    resamples = resamples,
+    metrics = metric,
+    control_grid(save_pred = TRUE))
+  
+  
+  # Metrics from initial 
+  results_intial <- collect_metrics(intial)
+  
+  # MBO 
+  
+  mbo <- tune_bayes(
+    object = wrokflow,
+    initial = intial,
+    param_info = param_info,
+    resamples = resamples,
+    metrics = metric,
+    control = bayes_control
+    )
+  
+  # Select best params from MBO
+  best_mbo <- mbo %>% select_best()
+  
+  # Collect all results from MBO
+  mbo_results <- collect_metrics(mbo)
+  
+  # Return 
+  return(list(
+    best_mbo_params = best_mbo,
+    results = mbo_results),
+    results_tune_grid = results_intial
+    )
+}
 
 
 
