@@ -1,19 +1,40 @@
 
 #### Libraries ####
+library(tidymodels)
+library(finetune)
+library(DiceDesign)
+library(colino)
+library(tidyverse)
+library(patchwork)
+library(ggcorrplot)
+library(DT)
 library(targets)
 library(tarchetypes)
-library(tidymodels)
+library(themis)
 
 report_dir <- normalizePath("Report_documents")
 
-# Set targets options
+# Set targets optionstar
 tar_option_set(
-  packages = c("tidyverse","patchwork","ggcorrplot","DT","tidymodels"),
+  packages = c(
+    "tidyverse",
+    "patchwork",
+    "ggcorrplot",
+    "DT",
+    "themis",
+    "tidymodels",
+    "finetune",
+    "DiceDesign",
+    "colino"),
   seed = 123)
 
 # Source functions
 tar_source("functions/data_clean_fuction.R")
 tar_source("functions/eda_functions.R")
+tar_source("functions/recipe_preprocessing_functions.R")
+tar_source("functions/tuning_functions.R")
+tar_source("functions/pso_functions.R")
+tar_source("functions/random_forest_function.R")
 
 # Workflows
 list(
@@ -61,7 +82,22 @@ list(
     # Validation data
     tar_target(
       name = validation_data,
-      command = validation(data_split))
+      command = validation(data_split)),
+    
+    # Random forest 
+    tar_target(
+      name = random_forest,
+      command = random_forest_func(data_train = training_data,
+                                   data_test = testing_data,
+                                   data_validation = validation_data,
+                                   aov_size = 30,
+                                   pso_mtry_lower_fct = 0.5,
+                                   pso_mtry_up_fct = 1.5,
+                                   pso_min_n_lower_fct = 0.5,
+                                   pso_min_n_up_fct = 1.5,
+                                   pso_trees_lower_fct = 0.5,
+                                   pso_trees_up_dct = 1.5)
+      )
 )
 
 
