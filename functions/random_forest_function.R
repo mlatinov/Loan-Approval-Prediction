@@ -14,7 +14,9 @@ random_forest_func <- function(data_train,
                                pso_trees_up_dct = 1.5) {
   
   # Preprocessing recipe 
-  recipe <- recipe_tree_smotenc_infgain(data = data_train)
+  recipe_result <- recipe_tree_smotenc_infgain(data = data_train)
+  preproc_data <- recipe_result$data
+  recipe <- recipe_result$recipe
   
   # Message 
   message("Recipe pass")
@@ -36,7 +38,7 @@ random_forest_func <- function(data_train,
   # Resamples 
   resamples <- vfold_cv(data = data_validation, v = 5)
   
-  # Light tune params
+  # Light tune params range
   params <- parameters(list(
     mtry(range = c(5, 10)),
     min_n(range = c(2, 60)),
@@ -119,7 +121,12 @@ random_forest_func <- function(data_train,
     select(loan_status) %>% 
     bind_cols(prob_preds)
   
-  auc_test_data <- roc_auc(roc_data, truth = loan_status, .pred_1)
+  auc_test_data <- roc_auc(
+    roc_data,
+    truth = loan_status,
+    .pred_0,
+    event_level = "first"  
+  )
   
   # Return results 
   return(list(
@@ -127,8 +134,9 @@ random_forest_func <- function(data_train,
     auc_test_data = auc_test_data,
     mbo_results = mbo_results,
     random_forest_fit = random_forest_fit,
-    predictions_test_data = predictions_test_data,
-    mbo_best_params = mbo_best_params
+    predictions_test_data = prob_preds,
+    mbo_best_params = mbo_best_params,
+    preproc_data = preproc_data
   ))
 }
 
