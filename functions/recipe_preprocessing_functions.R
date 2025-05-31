@@ -30,12 +30,23 @@ recipe_tree_smotenc_infgain <- function(data){
     
     # Encode Categorical variables
     step_dummy(all_nominal_predictors()) 
+  
+  # Preproc the data 
+  preroc_data_prep <- prep(x = recipe_tree,training = data)
+  preproc_data <- bake(preroc_data_prep,data)
+  
+  # Retrun
+  return(list(
+    recipe = recipe_tree,
+    data = preproc_data
+    ))
 }
   
 ##### Recipe For Tree-Based models with ROSE for balancing and Boruta Shadows ####
 
 recipe_tree_rose_boruta <- function(data){
   
+  # Make a recipe
   recipe_tree <- recipe(loan_status ~ .,data = data) %>%
     
     # Step to Exclude Id from the preprocessing
@@ -55,6 +66,17 @@ recipe_tree_rose_boruta <- function(data){
     
     # Encode Categorical variables
     step_dummy(all_nominal_predictors()) 
+  
+  # Preproc the data 
+  preroc_data_prep <- prep(x = recipe_tree,training = data)
+  preproc_data <- bake(preroc_data_prep,data)
+  
+  # Retrun
+  return(list(
+    recipe = recipe_tree,
+    data = preproc_data
+  ))
+  
 }
 
 ##### Recipe For Gradinet Boosting with ROSE for balancing and Boruta Shadows and mRMR ####
@@ -86,6 +108,16 @@ gb_recipe_rose_boruta_mrmr <- function(data){
     
     # Encode Categorical variables
     step_dummy(all_nominal_predictors()) 
+  
+  # Preproc the data 
+  preroc_data_prep <- prep(x = recipe_gb,training = data)
+  preproc_data <- bake(preroc_data_prep,data)
+  
+  # Retrun
+  return(list(
+    recipe = recipe_gb,
+    data = preproc_data
+  ))
 }
 
 #### Linear-Based Recipes ####
@@ -122,6 +154,16 @@ log_r_recipe_rose_cor <- function(data){
     
     # Encode Categorical variables
     step_dummy(all_nominal_predictors()) 
+  
+  # Preproc the data 
+  preroc_data_prep <- prep(x = recipe,training = data)
+  preproc_data <- bake(preroc_data_prep,data)
+  
+  # Retrun
+  return(list(
+    recipe = recipe,
+    data = preproc_data
+  ))
 }
 
 #### MARS Recipes ####
@@ -135,7 +177,7 @@ log_r_recipe_rose_cor <- function(data){
 
 mars_recipe_rose_cor_mrmr <- function(data){
   
-  recipe_log <- recipe(loan_status ~ .,data = data) %>%
+  recipe_mars <- recipe(loan_status ~ .,data = data) %>%
     
     # Step to Exclude Id from the preprocessing
     update_role(id,new_role = "Id") %>% 
@@ -160,6 +202,16 @@ mars_recipe_rose_cor_mrmr <- function(data){
     
     # Encode Categorical variables
     step_dummy(all_nominal_predictors()) 
+  
+  # Preproc the data 
+  preroc_data_prep <- prep(x = recipe_mars,training = data)
+  preproc_data <- bake(preroc_data_prep,data)
+  
+  # Retrun
+  return(list(
+    recipe = recipe_mars,
+    data = preproc_data
+  ))
 }
 
 
