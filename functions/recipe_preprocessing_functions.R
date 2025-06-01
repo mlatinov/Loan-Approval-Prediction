@@ -215,6 +215,45 @@ mars_recipe_rose_cor_mrmr <- function(data){
 }
 
 
+#### Neural Networks Recepies ####
+
+# - Strongly affected by scale
+# - Need dense, normalized inputs
+# - Prefer no missing values
+
+nn_recipe <- function(data){
+  
+  # Recipe Object 
+  recipe_nn <- recipe(loan_status ~ .,data = data) %>%
+    
+    # Step id new role
+    update_role(id ,new_role = "id") %>%
+    
+    # Scale all numerical features
+    step_scale(all_numeric_predictors()) %>%
+    
+    # One-Hot encode all categorical features
+    step_dummy(all_nominal_predictors(),one_hot = TRUE)
+  
+  # Bake the recipe
+  preproc_data_prep <- prep(x = recipe_nn,training = data)
+  prepoc_data <- bake(preproc_data_prep,data)
+  
+  # Return
+  return(list(
+    recipe = recipe_nn,
+    prepoc_data = prepoc_data,
+    preproc_data_prep = preproc_data_prep
+  ))
+  
+}
+
+
+
+
+
+
+
 
 
 
