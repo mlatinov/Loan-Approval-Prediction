@@ -99,9 +99,6 @@ global_explain <- function(data, model, label) {
   ))
   
 }
-
-x <- global_explain(data = random_forest$preproc_data,model = random_forest$random_forest_fit,label = "Random Forest")
-
 ## Local Explanations 
 local_explain <- function(data,model,instance,label){
   
@@ -155,18 +152,9 @@ local_explain <- function(data,model,instance,label){
   # Return
   return(list(
     break_down_plot = break_down_plot,
-    shap_plot = shap_plot,
+    shap_plot = shap_plot
   ))
   
 }
-
-instance <- random_forest$preproc_data %>% slice(1)
-
-y <- local_explain(data = random_forest$preproc_data,
-                   model = random_forest$random_forest_fit,
-                   label = "Random Forest",
-                   instance = instance
-                   )
-
 
 
