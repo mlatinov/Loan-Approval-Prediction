@@ -1,0 +1,121 @@
+---
+title: "<span style='color:#3498db;'>EDA Report</span> <br> <small style='font-size:0.6em; color:#7f8c8d;'>Model_Explanatory_Analysis</small>"
+author: "<i class='fas fa-user'></i> **Metodi Latinov**"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    theme: cosmo
+    highlight: tango
+    css: styles.css
+params:
+  random_forest: NULL 
+knit: targets::tar_knit  
+---
+
+```{r setup, include=FALSE}
+random_forest_model <- params$random_forest$random_forest_fit
+preproc_data_rf <- params$random_forest$preproc_data
+```
+
+
+# Global Model Explanations 
+
+```{r}
+rf_model_eval <- global_explain(
+  data = preproc_data_rf,
+  model = random_forest_model,
+  label = "Random Forest"
+  )
+```
+
+## Models Performace
+
+### Random Forest
+
+```{r}
+rf_model_eval$model_performance_plot
+```
+    
+## Model Importance Plot
+
+### Random Forest
+
+```{r}
+rf_model_eval$importance_full_plot
+```
+
+## PDP 
+
+### Random Forest 
+
+```{r}
+pdp_loan_intent_rate_rf <- rf_model_eval$pdp_loan_intent_rate_plot
+pdp_income_rate_rf <- rf_model_eval$pdp_income_plot
+pdp_emp_lenght_rf <- rf_model_eval$pdp_emp_lenght_plot
+
+pdp_rf <- pdp_loan_intent_rate_rf / (pdp_income_rate_rf + pdp_emp_lenght_rf) 
+plot(pdp_rf)
+```
+
+## ALE
+
+### Random Forest
+
+```{r}
+ale_loan_pct_income_plot_rf <- rf_model_eval$ale_loan_pct_income_plot
+ale_age_plot_rf <- rf_model_eval$ale_age_plot
+
+rf_ale_plot <- ale_loan_pct_income_plot_rf + ale_age_plot_rf
+
+plot(rf_ale_plot)
+```
+
+# Local Model Explanations 
+
+```{r}
+
+# Instance high/low
+instance_high_pct_income <- preproc_data_rf %>% arrange(desc(loan_percent_income)) %>% slice(1) 
+instance_low_pct_income <- preproc_data_rf %>% arrange(loan_percent_income) %>% slice(1) 
+
+local_rf_pct_income_high <- local_explain(
+  data = preproc_data_rf,
+  model = random_forest_model,
+  instance = instance_high_pct_income,
+  label = "Random Forest")
+
+local_rf_pct_income_low <- local_explain(
+  data = preproc_data_rf,
+  model = random_forest_model,
+  instance = instance_low_pct_income,
+  label = "Random Forest")
+
+```
+
+## Break Down Plots
+
+### Random Forest
+
+```{r}
+bdp_pct_income_high_plot <- local_rf_pct_income_high$break_down_plot
+bdp_pct_income_low_plot <- local_rf_pct_income_low$break_down_plot
+
+plot(bdp_pct_income_high_plot + bdp_pct_income_low_plot)
+```
+
+## SHAP 
+
+### Random Forest
+
+```{r}
+shap_pct_income_high_plot <- local_rf_pct_income_high$shap_plot
+shap_pct_income_low_plot <- local_rf_pct_income_low$shap_plot
+
+plot(shap_pct_income_high_plot + shap_pct_income_low_plot)
+```
+
+
+
