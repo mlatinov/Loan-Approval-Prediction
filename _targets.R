@@ -11,6 +11,7 @@ library(DT)
 library(targets)
 library(tarchetypes)
 library(themis)
+library(DALEX)
 
 report_dir <- normalizePath("Report_documents")
 
@@ -25,7 +26,8 @@ tar_option_set(
     "tidymodels",
     "finetune",
     "DiceDesign",
-    "colino"),
+    "colino"
+    ),
   seed = 123)
 
 # Source functions
@@ -35,6 +37,7 @@ tar_source("functions/recipe_preprocessing_functions.R")
 tar_source("functions/tuning_functions.R")
 tar_source("functions/pso_functions.R")
 tar_source("functions/random_forest_function.R")
+tar_source("functions/explanatory_model_functions.R")
 
 # Workflows
 list(
@@ -96,8 +99,21 @@ list(
                                    pso_min_n_lower_fct = 0.5,
                                    pso_min_n_up_fct = 1.5,
                                    pso_trees_lower_fct = 0.5,
-                                   pso_trees_up_dct = 1.5)
-      )
+                                   pso_trees_up_dct = 1.5
+                                   )
+      ),
+    
+    
+ #### Write Model Explanation Report ####
+ 
+    # Report
+    tar_render(
+      name = model_explanations_report,
+      path = file.path(report_dir, "Model_Explanatory_Analysis.Rmd"),
+      output_file = file.path(report_dir, "Model-Explanatory-Analysis.html"),
+      params = list(random_forest = random_forest),
+      quiet = FALSE
+    )
 )
 
 
