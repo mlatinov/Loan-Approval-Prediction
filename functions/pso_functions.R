@@ -93,12 +93,97 @@ rf_op_range_min_max_sa <- function(best_param,
   ))
 }
 
-x <- tibble(
-  mtry = 2,
-  min_n = 20,
-  trees = 200
-)
-rf_op_range_min_max_sa(best_param = x)
+# Optim parameter space for MARS using
+# Enhanced Stochastic Evolutionary optimization of LHS
+
+mars_optim_range_maximinESE_LHS <- function(best_params,
+                                            grid_resolution = 20,
+                                            num_terms_lower_fct = 0.5,
+                                            num_terms_upper_fct = 1.5,
+                                            prod_degree_lower_fct = 0.5,
+                                            prod_degree_upper_fct = 1.5
+                                            ) {
+  
+  # Define adaptive parameter ranges around the best known parameter values
+  
+  mars_param_space <- parameters(
+    
+    # Scale num_terms by num_terms_lower_fct and num_terms_high_fct
+    num_terms(range = c(
+      max(1,floor(best_params$num_terms * num_terms_lower_fct)),
+      ceiling(best_params$num_terms * num_terms_upper_fct)
+    )),
+    # Scale prod_degree by prod_degree_lower_fct and prod_degree_upper_fct
+    prod_degree(range = c(
+      max(1,floor(best_params$prod_degree * prod_degree_lower_fct)),
+      ceiling(best_params$prod_degree * prod_degree_upper_fct)
+    ))
+  )
+    # Get numeric ranges for LHS sampling
+    mars_ranges <- map(mars_param_space$object, ~ as.numeric(range_get(.x)))
+    
+    # Create a sequence grid for each param 
+    mars_df_params <- data.frame(
+      num_terms = as.integer(seq(mars_ranges[[1]][1],mars_ranges[[1]][2],length.out = grid_resolution)),
+      prod_degree = as.integer(seq(mars_ranges[[2]][1],mars_ranges[[2]][2],length.out = grid_resolution))
+    )
+    
+    # Heuristic function to check irregularity of coverage in param space
+    heuristics_check <- function(df) {
+      df_scaled <- df %>% mutate(across(everything(), ~rescale(.x, c(0, 1))))
+      dist_matrix <- dist(as.matrix(df_scaled))
+      coverage <- sd(dist_matrix) / mean(dist_matrix)
+      return(coverage)
+    }
+    
+    # Initial coverage of the naive grid
+    initial_coverage <- heuristics_check(mars_df_params)
+  
+    # Generate initial Latin Hypercube Design in normalized space
+    lhc_design <- lhsDesign(n = grid_resolution, dimension = 2, randomized = TRUE, seed = 123)$design
+    
+   #  maximin LHS. ESE 
+   optim_lch_mars <- 
+     maximinESE_LHS(
+       design = lhc_design,
+       T0 = 0.1,
+       inner_it = 15,
+       J = 5,
+       it = 50,
+       p = 50
+     )
+   
+   # Map normalized optimized design to actual parameter values
+   final_design <- data.frame(
+     num_terms = mars_df_params$num_terms[findInterval(optim_lch_mars$design[, 1], seq(0, 1, length.out = grid_resolution))],
+     prod_degree = mars_df_params$prod_degree[findInterval(optim_lch_mars$design[, 2], seq(0, 1, length.out = grid_resolution))]
+   )
+   
+   # Coverage of the optimized design
+   optimized_coverage <- heuristics_check(final_design)
+   
+   # Warn if optimization did not improve coverage
+   if (initial_coverage < optimized_coverage) {
+     warning("Initial coverage is better than the optimized coverage.")
+   }
+   
+   # Create parameter info object with ranges from optimized design
+   param_info <- parameters(
+     num_terms(range = range(final_design$num_terms)),
+     prod_degree(range = range(final_design$prod_degree))
+   )
+   
+   # Return param_info and coverage stats
+   return(list(
+     param_info = param_info,
+     initial_coverage = initial_coverage,
+     optimized_coverage = optimized_coverage,
+     final_design = final_design
+   ))
+}
+
+
+
 
 
 
