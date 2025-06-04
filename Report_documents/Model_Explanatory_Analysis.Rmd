@@ -103,7 +103,9 @@ local_rf_pct_income_low <- local_explain(
 bdp_pct_income_high_plot <- local_rf_pct_income_high$break_down_plot
 bdp_pct_income_low_plot <- local_rf_pct_income_low$break_down_plot
 
-plot(bdp_pct_income_high_plot + bdp_pct_income_low_plot)
+bdp_pct_income_plot <- bdp_pct_income_high_plot / bdp_pct_income_low_plot
+
+plot(bdp_pct_income_plot)
 ```
 
 ## SHAP 
@@ -114,7 +116,8 @@ plot(bdp_pct_income_high_plot + bdp_pct_income_low_plot)
 shap_pct_income_high_plot <- local_rf_pct_income_high$shap_plot
 shap_pct_income_low_plot <- local_rf_pct_income_low$shap_plot
 
-plot(shap_pct_income_high_plot + shap_pct_income_low_plot)
+shap_income_plot <- shap_pct_income_high_plot / shap_pct_income_low_plot
+plot(shap_income_plot)
 ```
 
 
