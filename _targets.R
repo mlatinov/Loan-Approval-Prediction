@@ -38,6 +38,7 @@ tar_source("functions/tuning_functions.R")
 tar_source("functions/pso_functions.R")
 tar_source("functions/random_forest_function.R")
 tar_source("functions/explanatory_model_functions.R")
+tar_source("functions/mars_functions.R")
 
 # Workflows
 list(
@@ -103,6 +104,24 @@ list(
                                    )
       ),
     
+    # MARS 
+    tar_target(
+      name = mars,
+      command = mars_function(data_train = training_data,
+                              data_test = testing_data,
+                              data_validation = validation_data,
+                              aov_size = 30 ,
+                              grid_resolution = 30,
+                              num_terms_lower_fct = 0.5,
+                              num_terms_upper_fct = 2,
+                              prod_degree_lower_fct = 0.5 ,
+                              prod_degree_upper_fct = 2
+                              )
+    ),
+    
+    # XBG
+    # Cubist
+    # MLP 
     
  #### Write Model Explanation Report ####
  
