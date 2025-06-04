@@ -209,11 +209,10 @@ mars_recipe_rose_cor_mrmr <- function(data){
   
   # Retrun
   return(list(
-    recipe = recipe_mars,
+    recipe_mars = recipe_mars,
     data = preproc_data
   ))
 }
-
 
 #### Neural Networks Recepies ####
 
