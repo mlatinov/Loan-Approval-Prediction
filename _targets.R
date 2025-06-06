@@ -12,6 +12,7 @@ library(targets)
 library(tarchetypes)
 library(themis)
 library(DALEX)
+library(stacks)
 
 report_dir <- normalizePath("Report_documents")
 
@@ -39,6 +40,8 @@ tar_source("functions/pso_functions.R")
 tar_source("functions/random_forest_function.R")
 tar_source("functions/explanatory_model_functions.R")
 tar_source("functions/mars_functions.R")
+tar_source("functions/xgb_functions.R")
+tar_source("functions/glmnet_functions.R")
 
 # Workflows
 list(
@@ -88,41 +91,82 @@ list(
       name = validation_data,
       command = validation(data_split)),
     
-    # Random forest 
+    #### Random forest #### 
     tar_target(
       name = random_forest,
-      command = random_forest_func(data_train = training_data,
-                                   data_test = testing_data,
-                                   data_validation = validation_data,
-                                   aov_size = 30,
-                                   pso_mtry_lower_fct = 0.5,
-                                   pso_mtry_up_fct = 1.5,
-                                   pso_min_n_lower_fct = 0.5,
-                                   pso_min_n_up_fct = 1.5,
-                                   pso_trees_lower_fct = 0.5,
-                                   pso_trees_up_dct = 1.5
-                                   )
+      command = random_forest_func(
+        data_train = training_data,
+        data_test = testing_data,
+        data_validation = validation_data,
+        aov_size = 30,
+        pso_mtry_lower_fct = 0.5,
+        pso_mtry_up_fct = 1.5,
+        pso_min_n_lower_fct = 0.5,
+        pso_min_n_up_fct = 1.5,
+        pso_trees_lower_fct = 0.5,
+        pso_trees_up_dct = 1.5
+        )
       ),
     
-    # MARS 
+    #### MARS #### 
     tar_target(
       name = mars,
-      command = mars_function(data_train = training_data,
-                              data_test = testing_data,
-                              data_validation = validation_data,
-                              aov_size = 30 ,
-                              grid_resolution = 30,
-                              num_terms_lower_fct = 0.5,
-                              num_terms_upper_fct = 2,
-                              prod_degree_lower_fct = 0.5 ,
-                              prod_degree_upper_fct = 2
-                              )
+      command = mars_function(
+        data_train = training_data,
+        data_test = testing_data,
+        data_validation = validation_data,
+        aov_size = 30,
+        grid_resolution = 30,
+        num_terms_lower_fct = 0.5,
+        num_terms_upper_fct = 2,
+        prod_degree_lower_fct = 0.5,
+        prod_degree_upper_fct = 2
+        )
     ),
     
-    # XBG
-    # Cubist
-    # MLP 
-    
+    #### XBG ####
+    tar_target(
+      name = xgb,
+      command = xgb_function(
+        data_training = training_data,
+        data_testing = testing_data,
+        data_validation = validation_data,
+        xgb_aov_size = 25,
+        grid_resolution = 30,
+        mtry_lower_fct = 0.5,
+        mtry_upper_fct = 2.0,
+        trees_lower_fct = 0.7,
+        trees_upper_fct = 1.8,
+        min_n_lower_fct = 0.5,
+        min_n_upper_fct = 1.5,
+        tree_depth_lower_fct = 0.5,
+        tree_depth_upper_fct = 1.5
+      )
+    ),
+  
+  #### Glmnet ####
+  tar_target(
+    name = glm_net,
+    command = glmnet_function(
+      data_training = training_data,
+      data_testing = testing_data,
+      data_validation = validation_data,
+      WL_size = 20
+    )
+  ),
+  
+  #### Stack Model ####
+  tar_target(
+    name = staked_models,
+    command = staked_models_function(
+      data_test = testing_data,
+      random_forest$mbo,
+      mars$mbo,
+      xgb$mbo,
+      glmnet$tune_race_wl
+      )
+    ),
+  
  #### Write Model Explanation Report ####
  
     # Report
@@ -134,6 +178,9 @@ list(
       quiet = FALSE
     )
 )
+
+#### Write csv predictions ####
+
 
 
 
