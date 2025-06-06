@@ -79,7 +79,8 @@ tune_race_wl <- function(workflow,burn_in,resamples,size=20,params){
   # Return
   return(list(
     performance_cv = performance_cv,
-    best_model_params = best_model_params
+    best_model_params = best_model_params,
+    race_results = race_results
   ))
 }
 
