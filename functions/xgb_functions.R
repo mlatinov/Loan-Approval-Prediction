@@ -105,6 +105,7 @@ xgb_function <- function(data_training,
   # Collect the best params
   mbo_best_params <- mbo$best_mbo_params
   mbo_results <- mbo$mbo_results
+  mbo_store <- mbo$mbo_store
   
   # Message
   message("Finalize Workflow ...")
@@ -139,6 +140,7 @@ xgb_function <- function(data_training,
   # Return results 
   return(list(
     mbo = mbo,
+    mbo_store = mbo_store,
     auc_test_data = auc_test_data,
     mbo_results = mbo_results,
     xgb_fit = xgb_fit,

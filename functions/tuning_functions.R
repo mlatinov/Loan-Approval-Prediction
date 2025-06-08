@@ -143,6 +143,7 @@ mbo_function <- function(workflow,
   # Return 
   return(list(
     best_mbo_params = best_mbo,
+    mbo_store = mbo,
     results = mbo_results,
     results_tune_grid = results_intial
     ))

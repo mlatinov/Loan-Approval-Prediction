@@ -92,6 +92,7 @@ mars_function <- function(data_train,
     # Collect the best params
     mbo_best_params <- mbo$best_mbo_params
     mbo_results <- mbo$mbo_results
+    mbo_store <- mbo$mbo_store
     
     # Message
     message("Finalize Workflow ...")
@@ -126,6 +127,7 @@ mars_function <- function(data_train,
     # Return results 
     return(list(
       mbo = mbo,
+      mbo_store = mbo_store,
       auc_test_data = auc_test_data,
       mbo_results = mbo_results,
       mars_fit = mars_fit,
