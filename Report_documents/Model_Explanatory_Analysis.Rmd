@@ -12,22 +12,74 @@ output:
     css: styles.css
 params:
   random_forest: NULL 
+  mars: NULL
+  xgb: NULL
+  glm_net: NULL
+  linear_svm: NULL
 knit: targets::tar_knit  
 ---
 
 ```{r setup, include=FALSE}
+
+# Random Forest
 random_forest_model <- params$random_forest$random_forest_fit
 preproc_data_rf <- params$random_forest$preproc_data
-```
 
+# Mars
+mars_model <- params$mars$mars_fit
+preproc_data_mars <- params$mars$preproc_data
+
+# XGB 
+xgb_model <- params$xgb$xgb_fit
+preproc_data_xgb <- params$xgb$preproc_data
+
+# Glmnet
+glm_net_model <- params$glm_net$glmnet_fit
+preproc_data_glmnet <- params$glm_net$preproc_data
+
+# Linear SVM
+linear_svm_model <- params$linear_svm$svm_linear_fit
+preproc_data_svm_l <- params$linear_svm$preproc_data
+
+```
 
 # Global Model Explanations 
 
 ```{r}
-rf_model_eval <- global_explain(
+
+# Random Forest
+rf_model_global <- global_explain(
   data = preproc_data_rf,
   model = random_forest_model,
   label = "Random Forest"
+  )
+
+# Mars
+mars_model_global <- global_explain(
+  data = preproc_data_mars,
+  model = mars_model,
+  label = "Mars"
+  )
+
+# Mars
+xgb_model_global <- global_explain(
+  data = preproc_data_xgb,
+  model = xgb_model,
+  label = "XGB"
+  )
+
+# Mars
+glm_net_model_global <- global_explain(
+  data = preproc_data_glmnet,
+  model = glm_net_model,
+  label = "Glmnet"
+  )
+
+# Linear_svm
+linear_svm_model_global <- global_explain(
+  data = preproc_data_svm_l,
+  model = linear_svm_model,
+  label = "Linear SVM"
   )
 ```
 
@@ -36,7 +88,31 @@ rf_model_eval <- global_explain(
 ### Random Forest
 
 ```{r}
-rf_model_eval$model_performance_plot
+rf_model_global$model_performance_plot
+```
+
+### MARS
+
+```{r}
+mars_model_global$model_performance_plot
+```
+
+### XGB
+
+```{r}
+xgb_model_global$model_performance_plot
+```
+
+### Glmnet
+
+```{r}
+glm_net_model_global$model_performance_plot
+```
+
+### Linear SVM
+
+```{r}
+linear_svm_model_global$model_performance_plot
 ```
     
 ## Model Importance Plot
@@ -44,7 +120,31 @@ rf_model_eval$model_performance_plot
 ### Random Forest
 
 ```{r}
-rf_model_eval$importance_full_plot
+rf_model_global$importance_full_plot
+```
+
+### MARS
+
+```{r}
+mars_model_global$importance_full_plot
+```
+
+### XBG
+
+```{r}
+xgb_model_global$importance_full_plot
+```
+
+### Glmnet
+
+```{r}
+glm_net_model_global$importance_full_plot
+```
+
+### Linear SVM
+
+```{r}
+linear_svm_model_global$importance_full_plot
 ```
 
 ## PDP 
@@ -78,8 +178,16 @@ plot(rf_ale_plot)
 ```{r}
 
 # Instance high/low
-instance_high_pct_income <- preproc_data_rf %>% arrange(desc(loan_percent_income)) %>% slice(1) 
-instance_low_pct_income <- preproc_data_rf %>% arrange(loan_percent_income) %>% slice(1) 
+
+# Sort by descending income %, then take top row
+instance_high_pct_income <- preproc_data_rf %>%
+  arrange(desc(loan_percent_income)) %>%
+  head(1)
+
+# Sort by ascending income %, then take top row
+instance_low_pct_income <- preproc_data_rf %>%
+  arrange(loan_percent_income) %>%
+  head(1)
 
 local_rf_pct_income_high <- local_explain(
   data = preproc_data_rf,
