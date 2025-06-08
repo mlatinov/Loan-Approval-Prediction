@@ -42,6 +42,7 @@ tar_source("functions/explanatory_model_functions.R")
 tar_source("functions/mars_functions.R")
 tar_source("functions/xgb_functions.R")
 tar_source("functions/glmnet_functions.R")
+tar_source("functions/staked_models_function.R")
 
 # Workflows
 list(
@@ -131,8 +132,8 @@ list(
         data_training = training_data,
         data_testing = testing_data,
         data_validation = validation_data,
-        xgb_aov_size = 25,
-        grid_resolution = 30,
+        xgb_aov_size = 10,
+        grid_resolution = 10,
         mtry_lower_fct = 0.5,
         mtry_upper_fct = 2.0,
         trees_lower_fct = 0.7,
