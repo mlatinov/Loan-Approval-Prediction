@@ -43,6 +43,7 @@ tar_source("functions/mars_functions.R")
 tar_source("functions/xgb_functions.R")
 tar_source("functions/glmnet_functions.R")
 tar_source("functions/staked_models_function.R")
+tar_source("functions/svm_function.R")
 
 # Workflows
 list(
@@ -54,7 +55,9 @@ list(
     tar_target(name = loan_test_data,command = read_csv(file = file_test)),
 
     #### EDA ####
-    # Prepare data for EDA
+    
+    # Clean data & Prepare data for EDA
+    tar_target(name = kaggle_test ,command = clean_eda(data = loan_test_data)),
     tar_target(name = loan_train_eda,command = clean_eda(data = loan_train_data)),
     
     # Write EDA Report
@@ -92,7 +95,7 @@ list(
       name = validation_data,
       command = validation(data_split)),
     
-    #### Random forest #### 
+    ##### Random forest #### 
     tar_target(
       name = random_forest,
       command = random_forest_func(
@@ -109,7 +112,7 @@ list(
         )
       ),
     
-    #### MARS #### 
+    ##### MARS #### 
     tar_target(
       name = mars,
       command = mars_function(
@@ -125,7 +128,7 @@ list(
         )
     ),
     
-    #### XBG ####
+    ##### XBG ####
     tar_target(
       name = xgb,
       command = xgb_function(
@@ -145,7 +148,7 @@ list(
       )
     ),
   
-  #### Glmnet ####
+  ##### Glmnet ####
   tar_target(
     name = glm_net,
     command = glmnet_function(
@@ -156,15 +159,27 @@ list(
     )
   ),
   
-  #### Stack Model ####
+  ##### SVM ####
+  tar_target(
+    name = linear_svm,
+    command = svm_linear_function(
+      data_train = training_data,
+      data_test = testing_data,
+      data_validation = validation_data,
+      wl_size = 20
+      )
+    ),
+  
+  ##### Stack Model ####
   tar_target(
     name = staked_models,
     command = staked_models_function(
       data_test = testing_data,
-      random_forest$mbo,
-      mars$mbo,
-      xgb$mbo,
-      glmnet$tune_race_wl
+      rf = random_forest$mbo,
+      mars = mars$mbo,
+      xgb = xgb$mbo,
+      glmnet = glm_net$tune_race_wl,
+      linear_svm = linear_svm$tune_race_wl
       )
     ),
   
@@ -175,7 +190,13 @@ list(
       name = model_explanations_report,
       path = file.path(report_dir, "Model_Explanatory_Analysis.Rmd"),
       output_file = file.path(report_dir, "Model-Explanatory-Analysis.html"),
-      params = list(random_forest = random_forest),
+      params = list(
+        random_forest = random_forest,
+        mars = mars,
+        xgb = xgb,
+        glm_net = glm_net,
+        linear_svm = linear_svm
+        ),
       quiet = FALSE
     )
 )
