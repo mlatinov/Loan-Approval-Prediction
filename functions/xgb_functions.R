@@ -20,10 +20,7 @@ xgb_function <- function(data_training,
   recipe_result <- gb_recipe_rose_boruta_mrmr(data = data_training)
   recipe_xgb <- recipe_result$recipe
   data_preproc <- recipe_result$data
-  
-  # max number of featues 
-  max_num_features <- length(colnames(data_preproc)) -1
-  
+
   # Message
   message("Recipe Passed...")
   
@@ -32,9 +29,7 @@ xgb_function <- function(data_training,
     mtry = tune(),       # Randomly Selected Predictors
     trees = tune(),      # Trees
     min_n = tune(),      # Minimal Node Size
-    tree_depth = tune(), # Tree Depth
-    learn_rate = tune(), # Learning Rate
-    loss_reduction = tune()) %>% # Minimum Loss Reduction
+    tree_depth = tune()) %>% # Tree Depth
     set_engine("xgboost") %>%
     set_mode("classification")
   
@@ -44,16 +39,14 @@ xgb_function <- function(data_training,
     add_recipe(recipe_xgb)
   
   # Resamples
-  resamples <- vfold_cv(data = data_validation,v = 5)
+  resamples <- vfold_cv(data = data_validation,v = 3)
   
   # Params 
   param_xgb <- parameters(
-    mtry(range = c(1, max_num_features)),           # Set max_num_features accordingly
+    mtry(range = c(1, 20)),         
     trees(range = c(100, 1000)),                    # More practical trees range
     min_n(range = c(1, 20)),                        # More common min_n range
-    tree_depth(range = c(3, 15)),                   # Balanced tree depth
-    learn_rate(range = c(-3, -0.5), trans = log10_trans()),    # Learning rate from 0.001 to ~0.3
-    loss_reduction(range = c(-3, 1), trans = log10_trans())    # Gamma from 0.001 to 10
+    tree_depth(range = c(3, 15))                    # Balanced tree depth
   )
   
   # Message
@@ -62,7 +55,7 @@ xgb_function <- function(data_training,
   # Light Tune Tune Race Anova
   xgb_aov <- tune_race_aov(
     workflow = xgb_workflow,
-    burn_in = 3,
+    burn_in = 2,
     resamples = resamples,
     size = xgb_aov_size,
     params = param_xgb
@@ -123,16 +116,16 @@ xgb_function <- function(data_training,
   message("Fit the model ...")
   
   # Fit the model 
-  xgb_fit <- fit(xgb_workflow, data = data_train)
+  xgb_fit <- fit(xgb_workflow, data = data_training)
   
   # Message
   message("Predictions...")
   
   # Predict class probabilities on test data
-  prob_preds <- predict(xgb_fit, data_test, type = "prob")
+  prob_preds <- predict(xgb_fit, data_testing, type = "prob")
   
   # Compute AUC on the test data
-  roc_data <- data_test %>%
+  roc_data <- data_testing %>%
     select(loan_status) %>% 
     bind_cols(prob_preds)
   
@@ -151,7 +144,7 @@ xgb_function <- function(data_training,
     xgb_fit = xgb_fit,
     predictions_test_data = prob_preds,
     mbo_best_params = mbo_best_params,
-    preproc_data = preproc_data
+    preproc_data = data_preproc
   ))
   
 }

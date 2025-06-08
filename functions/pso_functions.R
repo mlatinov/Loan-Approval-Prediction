@@ -194,7 +194,8 @@ mars_optim_range_maximinESE_LHS <- function(best_params,
                                              min_n_lower_fct = 0.5,
                                              min_n_upper_fct = 1.5,
                                              tree_depth_lower_fct = 0.5,
-                                             tree_depth_upper_fct = 1.5) {
+                                             tree_depth_upper_fct = 1.5
+                                             ) {
     
     # XGB Param Space
     xgb_param_space <- parameters(
@@ -218,10 +219,7 @@ mars_optim_range_maximinESE_LHS <- function(best_params,
       tree_depth(range = c(
         max(1, floor(best_params$tree_depth * tree_depth_lower_fct)),
         ceiling(best_params$tree_depth * tree_depth_upper_fct)
-      )),
-      
-      learn_rate(range = c(1e-4, 1e-1), trans = log10_trans()),
-      loss_reduction(range = c(1e-4, 10), trans = log10_trans())
+      ))
     )
     
     # Get numeric ranges for LHS sampling
@@ -232,9 +230,7 @@ mars_optim_range_maximinESE_LHS <- function(best_params,
       mtry = as.integer(seq(xgb_ranges[[1]][1], xgb_ranges[[1]][2], length.out = grid_resolution)),
       trees = as.integer(seq(xgb_ranges[[2]][1], xgb_ranges[[2]][2], length.out = grid_resolution)),
       min_n = as.integer(seq(xgb_ranges[[3]][1], xgb_ranges[[3]][2], length.out = grid_resolution)),
-      tree_depth = as.integer(seq(xgb_ranges[[4]][1], xgb_ranges[[4]][2], length.out = grid_resolution)),
-      learn_rate = seq(xgb_ranges[[5]][1], xgb_ranges[[5]][2], length.out = grid_resolution),
-      loss_reduction = seq(xgb_ranges[[6]][1], xgb_ranges[[6]][2], length.out = grid_resolution)
+      tree_depth = as.integer(seq(xgb_ranges[[4]][1], xgb_ranges[[4]][2], length.out = grid_resolution))
     )
     
     # Heuristic function to check irregularity of coverage in param space
@@ -249,7 +245,7 @@ mars_optim_range_maximinESE_LHS <- function(best_params,
     initial_coverage <- heuristics_check(xgb_df_params)
     
     # Generate initial Latin Hypercube Design in normalized space
-    lhc_design <- lhsDesign(n = grid_resolution, dimension = 6, randomized = TRUE, seed = 123)$design
+    lhc_design <- lhsDesign(n = grid_resolution, dimension = 4, randomized = TRUE, seed = 123)$design
     
     #  maximin LHS. ESE 
     optim_lch_xgb <- 
@@ -264,12 +260,10 @@ mars_optim_range_maximinESE_LHS <- function(best_params,
     
     # Map normalized optimized design to actual parameter values
     final_design <- data.frame(
-      mtry = xgb_df_params$mtry[findInterval(optim_lch_xgb$design[, 1], seq(0, 1, length.out = grid_resolution))],
-      trees = xgb_df_params$trees[findInterval(optim_lch_xgb$design[, 2], seq(0, 1, length.out = grid_resolution))],
-      min_n = xgb_df_params$min_n[findInterval(optim_lch_xgb$design[, 3],seq(0, 1 ,length.out = grid_resolution))],
-      tree_depth = xgb_df_params$tree_depth[findInterval(optim_lch_xgb$design[, 4],seq(0, 1 , length.out = grid_resolution))],
-      learn_rate = xgb_df_params$learn_rate[findInterval(optim_lch_xgb$design[, 5],seq(0, 1, length.out = grid_resolution))],
-      loss_reduction = xgb_df_params$loss_reduction[findInterval(optim_lch_xgb$design[, 6],seq(0, 1, length.out = grid_resolution))]
+      mtry = xgb_df_params$mtry[pmax(1, findInterval(optim_lch_xgb$design[, 1], seq(0, 1, length.out = grid_resolution)))],
+      trees = xgb_df_params$trees[pmax(1, findInterval(optim_lch_xgb$design[, 2], seq(0, 1, length.out = grid_resolution)))],
+      min_n = xgb_df_params$min_n[pmax(1, findInterval(optim_lch_xgb$design[, 3], seq(0, 1, length.out = grid_resolution)))],
+      tree_depth = xgb_df_params$tree_depth[pmax(1, findInterval(optim_lch_xgb$design[, 4], seq(0, 1, length.out = grid_resolution)))]
     )
     
     # Coverage of the optimized design
@@ -285,9 +279,7 @@ mars_optim_range_maximinESE_LHS <- function(best_params,
       mtry(range = range(final_design$mtry)),
       trees(range = range(final_design$trees)),
       min_n(range = range(final_design$min_n)),
-      tree_depth(range = range(final_design$tree_depth)),
-      learn_rate(range = range(final_design$learn_rate)),
-      loss_reduction(range = range(final_design$loss_reduction))
+      tree_depth(range = range(final_design$tree_depth))
     )
     
     # Return param_info and coverage stats
