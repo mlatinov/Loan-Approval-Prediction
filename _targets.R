@@ -57,7 +57,7 @@ list(
     #### EDA ####
     
     # Clean data & Prepare data for EDA
-    tar_target(name = kaggle_test ,command = clean_eda(data = loan_test_data)),
+    tar_target(name = kaggle_test ,command = clean_kaggle(data = loan_test_data)),
     tar_target(name = loan_train_eda,command = clean_eda(data = loan_train_data)),
     
     # Write EDA Report
@@ -76,24 +76,29 @@ list(
       name = data_split,
       command = initial_validation_split(
         data = loan_train_eda,
-        strata = "loan_status")),
+        strata = "loan_status"
+        )
+      ),
     
     ## Get the data 
     
     # Model train data 
     tar_target(
       name = training_data,
-      command = training(data_split)),
+      command = training(data_split)
+      ),
     
     # Model test data
     tar_target(
       name = testing_data,
-      command = testing(data_split)),
+      command = testing(data_split)
+      ),
     
     # Validation data
     tar_target(
       name = validation_data,
-      command = validation(data_split)),
+      command = validation(data_split)
+      ),
     
     ##### Random forest #### 
     tar_target(
@@ -161,7 +166,7 @@ list(
   
   ##### SVM ####
   tar_target(
-    name = linear_svm,
+    name = lin_svm,
     command = svm_linear_function(
       data_train = training_data,
       data_test = testing_data,
