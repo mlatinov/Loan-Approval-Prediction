@@ -247,8 +247,51 @@ nn_recipe <- function(data){
   
 }
 
+#### SVM Recipe ####
+# - Standardization
+# - Encoding
+# - Remove Near-Zero Variance
+# - Remove Correlated Predictors
+# - Feature Selection VIP
 
+svm_recipe_smotenc <- function(data){
+  
+  # Recipe 
+  recipe <-  recipe(loan_status ~ .,data = data) %>%
+    
+    # Step id new role
+    update_role(id ,new_role = "id") %>%
+    
+    # SMOTE 
+    step_smotenc(loan_status,over_ratio = 1) %>%
+  
+    # Remove Near-Zero Variance
+    step_nzv(all_predictors()) %>%
+    
+    # Remove Correlated Predictors
+    step_corr(all_numeric_predictors(),threshold = 0.8) %>%
+    
+    # Variable importance filter
+    step_select_vip(all_predictors(),outcome = loan_status) %>%
+    
+    # Scale all numerical features
+    step_normalize(all_numeric_predictors()) %>%
+    
+    # One-Hot encode all categorical features
+    step_dummy(all_nominal_predictors())
+  
+  # Bake the recipe
+  preproc_data_prep <- prep(x = recipe,training = data)
+  prepoc_data <- bake(preproc_data_prep,data)
+  
+  # Return
+  return(list(
+    recipe = recipe,
+    prepoc_data = prepoc_data,
+    preproc_data_prep = preproc_data_prep
+  ))
 
+}
 
 
 

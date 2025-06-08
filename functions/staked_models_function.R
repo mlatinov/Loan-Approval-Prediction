@@ -1,13 +1,45 @@
 
 
 #### Staked Function ####
-
-staked_models_function <- function(data_test, ...) {
+staked_models_function <- function(data_test,
+                                   random_forest,
+                                   mars,
+                                   xgb,
+                                   glm_net,
+                                   linear_svm) {
   
-  models <- list(...)
+  # Extract tuning results for each model type
+  best_candidates_rf <- random_forest$mbo$results_tune_grid %>%
+    arrange(desc(mean)) %>%
+    head(5)
   
+  best_candidates_mars <- mars$mbo$results_tune_grid %>%
+    arrange(desc(mean)) %>%
+    head(5)
+  
+  best_candidates_xgb <- xgb$mbo$results_tune_grid %>%
+    arrange(desc(mean)) %>%
+    head(5)
+  
+  # For glmnet racing results - extract from race_results
+  best_candidates_glmnet <- glm_net$tune_race_wl$race_results %>%
+    tune::collect_metrics() %>%
+    arrange(desc(mean)) %>%
+    head(5)
+  
+  # For glmnet racing results - extract from race_results
+  best_candidates_linear_svm <-linear_svm$tune_race_wl$race_results %>%
+    tune::collect_metrics() %>%
+    arrange(desc(mean)) %>%
+    head(5)
+  
+  # Stack the model 
   model_stacked <- stacks() %>%
-    add_candidates(!!!models) %>%
+    add_candidates(random_forest$random_forest_fit) %>%
+    add_candidates(mars$mars_fit) %>%
+    add_candidates(xgb$xgb_fit) %>%
+    add_candidates(glm_net$glmnet_fit) %>%
+    add_candidates()%>%
     blend_predictions() %>%
     fit_members()
   
